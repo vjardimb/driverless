@@ -56,8 +56,8 @@ def right_or_left_1(pose, closest_point):
     c_x = closest_point[0]
     c_y = closest_point[1]
 
-    rotation_matrix = [[math.cos(angle), math.sin(angle), 0],
-                       [-math.sin(angle), math.cos(angle), 0],
+    rotation_matrix = [[math.cos(angle), -math.sin(angle), 0],
+                       [math.sin(angle), math.cos(angle), 0],
                        [0, 0, 1]]
 
     transl_vector = [[x],
@@ -70,13 +70,15 @@ def right_or_left_1(pose, closest_point):
 
     new_closest = np.dot(rotation_matrix, np.array(position)-np.array(transl_vector))
 
-    multiplier = 1 if math.sin(angle) > 0 else -1
+    # multiplier = 1 if math.sin(angle) > 0 else -1
 
-    return "right" if new_closest[1]*multiplier > 1 else "left", (new_closest[0], new_closest[1])
+    # return "right" if new_closest[1]*multiplier > 1 else "left", (new_closest[0], new_closest[1])
+    return "right" if new_closest[0] > 0 else "left", abs(new_closest[0])
+
 
 def right_or_left_2(pose, closest_point):
-    x = pose[0]
-    y = pose[1]
+    r_x = pose[0]
+    r_y = pose[1]
     angle = math.radians(pose[2])
 
     s = math.sin(angle)
@@ -85,16 +87,48 @@ def right_or_left_2(pose, closest_point):
     c_x = closest_point[0]
     c_y = closest_point[1]
 
-    if s<0 and c<0:
-        print("1")
-    elif s<0 and c>0:
-        print("2")
-    elif s>0 and c>0:
-        print("3")
-    else:
-        print("4")
-    return 1,(2,3)
+    def line(x):
+        # get the line function for the car pose. format: y=a*x+b
+        a = math.tan(angle)
+        b = r_y - math.tan(angle) * r_x
 
+        # print("\n\n\na: ", a, "b: ", b)
+
+        return a*x+b
+
+    # print("r_y:", r_y, "c_x:", r_x)
+
+    above = c_y > line(c_x)
+
+    if (s<0 and above) or (s>0 and not above):
+       return "right"
+    else:
+        return "left"
+
+
+def turn(car, side, error):
+    keys = pygame.key.get_pressed()
+    moved = False
+
+    if keys[pygame.K_a]:
+        car.rotate(40, left=True)
+    if keys[pygame.K_d]:
+        car.rotate(40, right=True)
+    # if keys[pygame.K_w]:
+    if True:
+        moved = True
+        car.move_forward()
+
+    if not moved:
+        car.reduce_speed()
+
+    if not keys[pygame.K_a] and not keys[pygame.K_d]:
+        # if False:
+        print(side)
+        if side == "left":
+            car.rotate(error, left=True)
+        else:
+            car.rotate(error, right=True)
 
 if __name__ == "__main__":
     # win = pygame.display.set_mode((810, 810))

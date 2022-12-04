@@ -3,7 +3,7 @@ import time
 import math
 
 from car import PlayerCar
-from path import gen_path, get_closest_point, right_or_left_1, right_or_left_2
+from path import gen_path, get_closest_point, right_or_left_1, right_or_left_2, turn
 from utils import scale_image, blit_rotate_center
 
 
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # images = [(GRASS, (0, 0)), (TRACK, (0, 0))]
     # images = [(TRACK, (0, 0))]
     images = []
-    player_car = PlayerCar(4, 4)
+    player_car = PlayerCar(1, 4)
 
     WIDTH, HEIGHT = TRACK.get_width(), TRACK.get_height()
 
@@ -49,33 +49,18 @@ if __name__ == "__main__":
                 run = False
                 break
 
-        keys = pygame.key.get_pressed()
-        moved = False
-
-        if keys[pygame.K_a]:
-            player_car.rotate(left=True)
-        if keys[pygame.K_d]:
-            player_car.rotate(right=True)
-        if keys[pygame.K_w]:
-            moved = True
-            player_car.move_forward()
-
-        if not moved:
-            player_car.reduce_speed()
-
         closest_dot, coords = get_closest_point((player_car.x, player_car.y, player_car.angle), spl_array, WIN)
 
         for dot in spl_dots+[closest_dot]:
             dot.update()
             # the_dot.update()
 
-        # side, (x, y) = right_or_left_2((player_car.x, player_car.y, player_car.angle), coords)
-        # side, (x,y) = right_or_left((20, 10, 30), (50, 50))
+        side, error = right_or_left_1((player_car.x, player_car.y, player_car.angle), coords)
 
-        # print("\n\nx: ",player_car.x, "\ny: ",player_car.y, "\norientation: ", player_car.angle)
-        # print(player_car.angle)
-        # print("\n\nx: ",player_car.x, "\ny: ",player_car.y, "\norientation: ", player_car.angle)
-        # print(side)
+        print(side)
+
+        turn(player_car, side, error)
+
         # print("ccords", coords)
 
     pygame.quit()

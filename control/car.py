@@ -16,12 +16,25 @@ class AbstractCar:
 		self.angle = 0
 		self.x, self.y = self.START_POS
 		self.acceleration = 0.1
+		self.old_error = 0
 
-	def rotate(self, left=False, right=False):
+	def rotate(self, error, left=False, right=False):
+		# kp = 0.07
+		# kd = 0.7
+		kp = 0.09
+		kd = 1
+		# if old_error == None:
+		# 	old_error = 0
+
 		if left:
-			self.angle += self.rotation_vel
+			self.angle += kp*min(error, 15) + kd*(error - self.old_error)
+			# self.angle += 2
+			print(kp*min(error, 1500) - kd*(error - self.old_error))
 		elif right:
-			self.angle -= self.rotation_vel
+			self.angle -= kp*min(error, 15) + kd*(error - self.old_error)
+			# self.angle -= 2
+
+		self.old_error = error
 
 	def draw(self, win):
 		blit_rotate_center(win, self.img, (self.x, self.y), self.angle)
